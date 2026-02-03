@@ -1,16 +1,12 @@
 package cmd
 
-import (
-	"fmt"
-	"os"
-	"github.com/spf13/cobra"
+import( "github.com/spf13/cobra")
+var (
+	rate int
 )
 
-var rate int
-
 var rootCmd = &cobra.Command{
-   Use  : "belajargolang",
-   Short: "test",
+   Use: "orca",
    Long :`
      ⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -39,13 +35,26 @@ var rootCmd = &cobra.Command{
  OFFENSIVE SECURITY TOOL BY Adri Kusuma` ,
 }
 
-func Execute() { 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+func Execute() {
+	rootCmd.Execute()
 }
 
 func init() {
-	rootCmd.PersistentFlags().IntVarP(&rate, "rate", "r", 5, "requests per second",)
+	rootCmd.PersistentFlags().IntVarP(
+		&rate,
+		"rate",
+		"r",
+		5,
+		"requests per second",
+	)
+
+	rootCmd.PersistentFlags().StringVarP(
+		&outputFile,
+		"output",
+		"o",
+		"",
+		"write output to file",
+	)
 }
+
+

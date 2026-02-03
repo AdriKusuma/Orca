@@ -7,6 +7,7 @@ import (
 	"time"
 	"github.com/fatih/color"
 	"github.com/gocolly/colly"
+	"orca/internal/output"
 )
 
 func normalizeURL(raw string) string {
@@ -26,7 +27,7 @@ func normalizeURL(raw string) string {
 	return u.String()
 }
 
-func Run(target string, rate int){
+func Run(target string, rate int,out *output.Writer){
 	parse,_:= url.Parse(target)
 	host:= parse.Hostname()
 
@@ -50,11 +51,14 @@ func Run(target string, rate int){
 
 		switch {
 		case code >= 200 && code < 300:
-			fmt.Println(green("[", code, "]"), url)
+			line := fmt.Sprintf("%s %s", green(fmt.Sprintf("[%d]", code)), url)
+			out.Write(line)
 		case code >= 300 && code < 400:
-			fmt.Println(yellow("[", code, "]"), url)
+			line := fmt.Sprintf("%s %s", yellow(fmt.Sprintf("[%d]", code)), url)
+			out.Write(line)
 		default:
-			fmt.Println(red("[", code, "]"), url)
+			line := fmt.Sprintf("%s %s", red(fmt.Sprintf("[%d]", code)), url)
+			out.Write(line)
 		}
 	})
 

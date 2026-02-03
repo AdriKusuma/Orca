@@ -1,60 +1,85 @@
 package cmd
 
 import (
-	"orca/internal/crawler"
 	"fmt"
+	"orca/internal/crawler"
+	"orca/internal/output"
 	"time"
 	"github.com/spf13/cobra"
 )
 
-var crawl string
+var (
+	target string
+	outputFile string
+)
 
 var crawlCmd = &cobra.Command{
 	Use:   "crawl",
-	Short: "Input target URL for crawling",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(`
-     ⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣄⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣷⣄⠀⠀
-⠀⠀⠀⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣀⠀⠀⠀⣀⣿⣿⣿⣆⠀
-⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄
-⠀⠀⠀⠀⣾⣿⣿⡿⠋⠁⣀⣠⣬⣽⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⠿⠿⠟⠁
-⠀⠀⠀⢀⣿⣿⡏⢀⣴⣿⠿⠛⠉⠉⠀⢸⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⢸⣿⣿⢠⣾⡟⠁⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⢸⣿⣿⣾⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⣸⣿⣿⣿⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⢠⣾⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⢰⣿⡿⠛⠉⠀⠀⠀⠈⠙⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠈⠁  ___      ____       __       ____ 
-  /$$$$$$  /$$$$$$$   /$$$$$$   /$$$$$$ 
- /$$__  $$| $$__  $$ /$$__  $$ /$$__  $$
-| $$  \ $$| $$  \ $$| $$  \__/| $$  \ $$
-| $$  | $$| $$$$$$$/| $$      | $$$$$$$$
-| $$  | $$| $$__  $$| $$      | $$__  $$
-| $$  | $$| $$  \ $$| $$    $$| $$  | $$
-|  $$$$$$/| $$  | $$|  $$$$$$/| $$  | $$
- \______/ |__/  |__/ \______/ |__/  |__/                                       
-                                        
- OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
+	Short: "Crawl target website",
+	Run: func(cmd *cobra.Command, args []string) {	
+    fmt.Println(`
+		⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣄⠀⠀⠀⠀
+	⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣷⣄⠀⠀
+	⠀⠀⠀⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣀⠀⠀⠀⣀⣿⣿⣿⣆⠀
+	⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄
+	⠀⠀⠀⠀⣾⣿⣿⡿⠋⠁⣀⣠⣬⣽⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⠿⠿⠟⠁
+	⠀⠀⠀⢀⣿⣿⡏⢀⣴⣿⠿⠛⠉⠉⠀⢸⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⠀⠀⢸⣿⣿⢠⣾⡟⠁⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⠀⠀⢸⣿⣿⣾⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⠀⠀⣸⣿⣿⣿⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⢠⣾⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⢰⣿⡿⠛⠉⠀⠀⠀⠈⠙⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+	⠈⠁  ___      ____       __       ____ 
+	/$$$$$$  /$$$$$$$   /$$$$$$   /$$$$$$ 
+	/$$__  $$| $$__  $$ /$$__  $$ /$$__  $$
+	| $$  \ $$| $$  \ $$| $$  \__/| $$  \ $$
+	| $$  | $$| $$$$$$$/| $$      | $$$$$$$$
+	| $$  | $$| $$__  $$| $$      | $$__  $$
+	| $$  | $$| $$  \ $$| $$    $$| $$  | $$
+	|  $$$$$$/| $$  | $$|  $$$$$$/| $$  | $$
+	\______/ |__/  |__/ \______/ |__/  |__/                                       
+											
+	OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
  	fmt.Println("========================================")
-	fmt.Println("Target    : ", crawl)
+	fmt.Println("Target    : ", target)
 	fmt.Println("Rate limit: ", time.Second/time.Duration(rate))
 	fmt.Println("========================================")
-		crawler.Run(crawl, rate)
+	if target == "" {
+		fmt.Println("Target URL required")
+		return
+	}
+
+	if rate <= 0 {
+		rate = 5
+	}
+
+	writer, err := output.New(outputFile)
+	if err != nil {
+		fmt.Println("Output error:", err)
+		return
+	}
+	defer writer.Close()
+
+	crawler.Run(target, rate, writer)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(crawlCmd)
+
 	crawlCmd.Flags().StringVarP(
-		&crawl,
+		&target,
 		"url",
 		"u",
 		"",
-		"Target URL",
+		"target URL",
 	)
+
 	crawlCmd.MarkFlagRequired("url")
 }
+
+
+
