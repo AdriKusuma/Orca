@@ -1,13 +1,15 @@
 package cmd
 
-import(
+import (
 	"fmt"
 	"os"
-	"github.com/spf13/cobra" 
+	"github.com/spf13/cobra"
 )
 
+var rate int
+
 var rootCmd = &cobra.Command{
-   Use  : "orca",
+   Use  : "belajargolang",
    Short: "test",
    Long :`
      ⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -42,4 +44,8 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func init() {
+	rootCmd.PersistentFlags().IntVarP(&rate, "rate", "r", 5, "requests per second",)
 }
