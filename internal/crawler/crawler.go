@@ -3,13 +3,13 @@ package crawler
 import (
 	"fmt"
 	"net/url"
+	"orca/internal/agent"
+	"orca/internal/output"
 	"strings"
 	"time"
 	"github.com/fatih/color"
 	"github.com/gocolly/colly"
-	"orca/internal/output"
 )
-
 func normalizeURL(raw string) string {
 	u, err := url.Parse(raw)
 	if err != nil {
@@ -27,74 +27,65 @@ func normalizeURL(raw string) string {
 	return u.String()
 }
 
-func Run(target string, rate int,out *output.Writer, pararell int){
-	parse,_:= url.Parse(target)
-	host:= parse.Hostname()
 
-	c:=colly.NewCollector(
+func Run(target string, rate int, out *output.Writer, parallelism int, uaFile string) error {
+	parsed, err := url.Parse(target)
+	if err != nil {
+		return err
+	}
+	host := parsed.Hostname()
+
+	userAgents, err := agent.Load(uaFile)
+	if err != nil {
+		return err
+	}
+
+	c := colly.NewCollector(
 		colly.AllowedDomains(host),
-		colly.Async(true),)
+		colly.Async(true),
+	)
 
 	c.Limit(&colly.LimitRule{
-			DomainGlob: "*",
-			Parallelism: pararell,
-			Delay: time.Second/time.Duration(rate),
-		},
-	)
+		DomainGlob:  "*",
+		Parallelism: parallelism,
+		Delay:       time.Second / time.Duration(rate),
+	})
+
 	green := color.New(color.FgGreen).SprintFunc()
 	yellow := color.New(color.FgYellow).SprintFunc()
 	red := color.New(color.FgRed).SprintFunc()
 
+	c.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("User-Agent", agent.Random(userAgents))
+	})
+
 	c.OnResponse(func(r *colly.Response) {
 		code := r.StatusCode
-		url := r.Request.URL.String()
-
+		link := r.Request.URL.String()
+		var line string
 		switch {
 		case code >= 200 && code < 300:
-			line := fmt.Sprintf("%s %s", green(fmt.Sprintf("[%d]", code)), url)
-			out.Write(line)
+			line = fmt.Sprintf("%s %s", green(fmt.Sprintf("[%d]", code)), link)
 		case code >= 300 && code < 400:
-			line := fmt.Sprintf("%s %s", yellow(fmt.Sprintf("[%d]", code)), url)
-			out.Write(line)
+			line = fmt.Sprintf("%s %s", yellow(fmt.Sprintf("[%d]", code)), link)
 		default:
-			line := fmt.Sprintf("%s %s", red(fmt.Sprintf("[%d]", code)), url)
-			out.Write(line)
+			line = fmt.Sprintf("%s %s", red(fmt.Sprintf("[%d]", code)), link)
 		}
+		out.Write(line)
 	})
 
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		if link == "" {
-			return
-		}
-
-		abs := e.Request.AbsoluteURL(link)
-		if abs == "" {
-			return
-		}
-
+		href := e.Attr("href")
+		abs := e.Request.AbsoluteURL(href)
 		u, err := url.Parse(abs)
-		if err != nil {
+		if err != nil || !strings.Contains(u.Hostname(), host) {
 			return
 		}
-		if !strings.Contains(u.Hostname(), host) {
-			return
-		}
-
 		clean := normalizeURL(abs)
-		if clean == "" {
-			return
-		}
-
 		e.Request.Visit(clean)
 	})
 
-	c.OnError(func(r *colly.Response, err error) {
-		fmt.Println(red("[ERR]"), r.Request.URL, err)
-	})
-
-	fmt.Println("Start crawling:", target)
 	c.Visit(target)
 	c.Wait()
-	
+	return nil
 }

@@ -1,13 +1,18 @@
 package cmd
 
-import( "github.com/spf13/cobra")
+import (
+	"github.com/spf13/cobra"
+)
+
 var (
-	rate int
-	parallelism int
+	outputFile    string
+	parallelism   int
+	rate          int
+	userAgentFile string
 )
 
 var rootCmd = &cobra.Command{
-   Use: "orca",
+   Use:   "orca",
    Long :`
      ⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -36,14 +41,15 @@ var rootCmd = &cobra.Command{
  OFFENSIVE SECURITY TOOL BY Adri Kusuma` ,
 }
 
+
+
 func Execute() {
 	rootCmd.Execute()
 }
 
 func init() {
-	rootCmd.PersistentFlags().IntVarP(&rate, "rate","r",5,"Requests per second",)
-	rootCmd.PersistentFlags().StringVarP(&outputFile,"output","o","","Write output to file",)
-	rootCmd.PersistentFlags().IntVarP(&parallelism,"parallelism", "p", 1, "Run multiple requests at once")
+	rootCmd.PersistentFlags().StringVarP(&outputFile, "output", "o", "", "Output file")
+	rootCmd.PersistentFlags().IntVarP(&parallelism, "parallel", "p", 5, "Thread count")
+	rootCmd.PersistentFlags().IntVarP(&rate, "rate", "r", 5, "Request per second")
+	rootCmd.PersistentFlags().StringVarP(&userAgentFile, "random-agent", "a", "user-agent.txt", "Path to list of user-agent")
 }
-
-

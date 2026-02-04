@@ -1,80 +1,85 @@
 package cmd
 
 import (
+	"bufio"
+	"fmt"
+	"os"
 	"orca/internal/crawler"
 	"orca/internal/output"
-	"fmt"
-	"time"
 	"github.com/spf13/cobra"
+    "time"
 )
 
 var (
-	target string
-	outputFile string
+	target   string
 	listFile string
-	Pararellism int
 )
 
 var crawlCmd = &cobra.Command{
 	Use:   "crawl",
-	Short: "Crawl target website",
-	Run: func(cmd *cobra.Command, args []string) {	
+	Run: func(cmd *cobra.Command, args []string) {
     fmt.Println(`
-		⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣄⠀⠀⠀⠀
-	⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣷⣄⠀⠀
-	⠀⠀⠀⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣀⠀⠀⠀⣀⣿⣿⣿⣆⠀
-	⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄
-	⠀⠀⠀⠀⣾⣿⣿⡿⠋⠁⣀⣠⣬⣽⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⠿⠿⠟⠁
-	⠀⠀⠀⢀⣿⣿⡏⢀⣴⣿⠿⠛⠉⠉⠀⢸⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⠀⠀⢸⣿⣿⢠⣾⡟⠁⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⠀⠀⢸⣿⣿⣾⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⠀⠀⣸⣿⣿⣿⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⢠⣾⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⢰⣿⡿⠛⠉⠀⠀⠀⠈⠙⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-	⠈⠁  ___      ____       __       ____ 
-	/$$$$$$  /$$$$$$$   /$$$$$$   /$$$$$$ 
-	/$$__  $$| $$__  $$ /$$__  $$ /$$__  $$
-	| $$  \ $$| $$  \ $$| $$  \__/| $$  \ $$
-	| $$  | $$| $$$$$$$/| $$      | $$$$$$$$
-	| $$  | $$| $$__  $$| $$      | $$__  $$
-	| $$  | $$| $$  \ $$| $$    $$| $$  | $$
-	|  $$$$$$/| $$  | $$|  $$$$$$/| $$  | $$
-	\______/ |__/  |__/ \______/ |__/  |__/                                       
+	⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣄⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣷⣄⠀⠀
+⠀⠀⠀⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣀⠀⠀⠀⣀⣿⣿⣿⣆⠀
+⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄
+⠀⠀⠀⠀⣾⣿⣿⡿⠋⠁⣀⣠⣬⣽⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⠿⠿⠟⠁
+⠀⠀⠀⢀⣿⣿⡏⢀⣴⣿⠿⠛⠉⠉⠀⢸⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢸⣿⣿⢠⣾⡟⠁⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢸⣿⣿⣾⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣸⣿⣿⣿⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢠⣾⣿⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢰⣿⡿⠛⠉⠀⠀⠀⠈⠙⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠈⠁  ___      ____       __       ____ 
+  /$$$$$$  /$$$$$$$   /$$$$$$   /$$$$$$ 
+ /$$__  $$| $$__  $$ /$$__  $$ /$$__  $$
+| $$  \ $$| $$  \ $$| $$  \__/| $$  \ $$
+| $$  | $$| $$$$$$$/| $$      | $$$$$$$$
+| $$  | $$| $$__  $$| $$      | $$__  $$
+| $$  | $$| $$  \ $$| $$    $$| $$  | $$
+|  $$$$$$/| $$  | $$|  $$$$$$/| $$  | $$
+\______/ |__/  |__/ \______/ |__/  |__/                                       
 											
-	OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
+OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
+
+
  	fmt.Println("========================================")
 	fmt.Println("Target     : ", target)
 	fmt.Println("Pararellism: ", parallelism)
 	fmt.Println("Rate limit : ", time.Second/time.Duration(rate))
 	fmt.Println("========================================")
-	if target == "" {
-		fmt.Println("Target URL required")
-		return
-	}
+		if target == "" && listFile == "" {
+			fmt.Println("Error: Should fill target (-u)")
+			return
+		}
 
-	if rate <= 0 {
-		rate = 5
-	}
+		writer, _ := output.New(outputFile)
+		defer writer.Close()
 
-	writer, err := output.New(outputFile)
-	if err != nil {
-		fmt.Println("Output error:", err)
-		return
-	}
-	defer writer.Close()
 
-	crawler.Run(target, rate, writer, parallelism)
+		var targets []string
+		if listFile != "" {
+			file, _ := os.Open(listFile)
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				targets = append(targets, scanner.Text())
+			}
+			file.Close()
+		} else {
+			targets = append(targets, target)
+		}
+
+		for _, t := range targets {
+			fmt.Printf("\n[*] Crawling: %s\n", t)
+			crawler.Run(t, rate, writer, parallelism, userAgentFile)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(crawlCmd)
-	crawlCmd.Flags().StringVarP( &target, "url", "u",  "", "Target URL",)
-	crawlCmd.MarkFlagRequired("url",)
+	crawlCmd.Flags().StringVarP(&target, "url", "u", "", "URL Target")
 }
-
-
-
