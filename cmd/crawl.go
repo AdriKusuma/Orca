@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"orca/internal/crawler"
 	"orca/internal/output"
+	"fmt"
 	"time"
 	"github.com/spf13/cobra"
 )
@@ -11,6 +11,8 @@ import (
 var (
 	target string
 	outputFile string
+	listFile string
+	Pararellism int
 )
 
 var crawlCmd = &cobra.Command{
@@ -44,8 +46,9 @@ var crawlCmd = &cobra.Command{
 											
 	OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
  	fmt.Println("========================================")
-	fmt.Println("Target    : ", target)
-	fmt.Println("Rate limit: ", time.Second/time.Duration(rate))
+	fmt.Println("Target     : ", target)
+	fmt.Println("Pararellism: ", parallelism)
+	fmt.Println("Rate limit : ", time.Second/time.Duration(rate))
 	fmt.Println("========================================")
 	if target == "" {
 		fmt.Println("Target URL required")
@@ -63,22 +66,14 @@ var crawlCmd = &cobra.Command{
 	}
 	defer writer.Close()
 
-	crawler.Run(target, rate, writer)
+	crawler.Run(target, rate, writer, parallelism)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(crawlCmd)
-
-	crawlCmd.Flags().StringVarP(
-		&target,
-		"url",
-		"u",
-		"",
-		"target URL",
-	)
-
-	crawlCmd.MarkFlagRequired("url")
+	crawlCmd.Flags().StringVarP( &target, "url", "u",  "", "Target URL",)
+	crawlCmd.MarkFlagRequired("url",)
 }
 
 

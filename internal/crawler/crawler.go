@@ -27,7 +27,7 @@ func normalizeURL(raw string) string {
 	return u.String()
 }
 
-func Run(target string, rate int,out *output.Writer){
+func Run(target string, rate int,out *output.Writer, pararell int){
 	parse,_:= url.Parse(target)
 	host:= parse.Hostname()
 
@@ -37,7 +37,7 @@ func Run(target string, rate int,out *output.Writer){
 
 	c.Limit(&colly.LimitRule{
 			DomainGlob: "*",
-			Parallelism: 1,
+			Parallelism: pararell,
 			Delay: time.Second/time.Duration(rate),
 		},
 	)
