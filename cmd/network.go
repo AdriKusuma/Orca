@@ -1,21 +1,21 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
+	"orca/internal/network"
 )
 
-var (
-	targerUrl     string
-	outputFile    string
-	parallelism   int
-	rate          int
-	userAgentFile string
+var(
+	targetUrl string
 )
 
-var rootCmd = &cobra.Command{
-   Use:   "orca",
-   Long :`
-     ⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+var networkCmd = &cobra.Command{
+	Use  : "network",
+	Short: "Network Scanner",
+    Run: func(cmd *cobra.Command, args []string){
+fmt.Println(`
+	⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠺⢿⣿⣿⣿⣿⣿⣿⣷⣦⣠⣤⣤⣤⣄⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣄⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⢀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣷⣄⠀⠀
@@ -37,21 +37,22 @@ var rootCmd = &cobra.Command{
 | $$  | $$| $$__  $$| $$      | $$__  $$
 | $$  | $$| $$  \ $$| $$    $$| $$  | $$
 |  $$$$$$/| $$  | $$|  $$$$$$/| $$  | $$
- \______/ |__/  |__/ \______/ |__/  |__/                                       
-                                        
- OFFENSIVE SECURITY TOOL BY Adri Kusuma` ,
+\______/ |__/  |__/ \______/ |__/  |__/                                       
+											
+OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
+fmt.Println("======================================")
+fmt.Println("Target: ",targetUrl)
+fmt.Println("======================================")
+if targetUrl == ""  {
+	fmt.Println("Empty URL! Use -u for input URL")
+	return
+}
+network.RunIPscanner(targetUrl)
+
+	},
 }
 
-
-
-func Execute() {
-	rootCmd.Execute()
-}
-
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&targerUrl, "url", "u", "", "Input URL target")
-	rootCmd.PersistentFlags().StringVarP(&outputFile, "output", "o", "", "Save as file")
-	rootCmd.PersistentFlags().IntVarP(&parallelism, "parallel", "p", 5, "Thread count")
-	rootCmd.PersistentFlags().IntVarP(&rate, "rate", "r", 5, "Request per second")
-	rootCmd.PersistentFlags().StringVarP(&userAgentFile, "random agent", "a", "user-agent.txt", "Path to file list user-agent")
+func init()  {
+	rootCmd.AddCommand(networkCmd)
+	networkCmd.PersistentFlags().StringVarP(&targetUrl, "url", "u", "", "URL target")
 }

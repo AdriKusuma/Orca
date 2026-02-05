@@ -16,7 +16,8 @@ var (
 )
 
 var crawlCmd = &cobra.Command{
-	Use:   "crawl",
+	Use  :   "crawl",
+	Short:   "Web crawler",
 	Run: func(cmd *cobra.Command, args []string) {
     fmt.Println(`
 	⢀⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -52,13 +53,12 @@ OFFENSIVE SECURITY TOOL BY Adri Kusuma`)
 	fmt.Println("Rate limit : ", time.Second/time.Duration(rate))
 	fmt.Println("========================================")
 		if target == "" && listFile == "" {
-			fmt.Println("Error: Should fill target (-u)")
+			fmt.Println("Empty URL! Use -u for input URL")
 			return
 		}
 
 		writer, _ := output.New(outputFile)
 		defer writer.Close()
-
 
 		var targets []string
 		if listFile != "" {
